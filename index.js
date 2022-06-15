@@ -3,10 +3,17 @@ const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 const score = document.getElementById("score");
+const startGame = document.getElementById("btn");
+const model = document.querySelector(".pop-up");
+const finalScore = document.getElementById("finalScore");
+const gameMusic = document.getElementById("gameMusic");
+const lose = document.getElementById("lost");
+const shot = document.getElementById("shot");
 
 window.addEventListener("resize", () => {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
+  init();
 });
 let scoreSum = 0;
 
@@ -96,10 +103,22 @@ class Particle {
     this.y += this.velocity.y;
   }
 }
-const player = new Player(canvas.width / 2, canvas.height / 2, 30, "white");
-const projectiles = [];
-const enemies = [];
-const particles = [];
+let player;
+let projectiles;
+let enemies;
+let particles;
+
+function init() {
+  player = new Player(canvas.width / 2, canvas.height / 2, 10, "white");
+  projectiles = [];
+  enemies = [];
+  particles = [];
+  scoreSum = 0;
+  score.innerHTML = scoreSum;
+  finalScore.innerHTML = scoreSum;
+  gameMusic.play();
+  gameMusic.currentTime = 5;
+}
 //////function to make enemies////////
 function spawnEnemies() {
   let radius = Math.random() * 22 + 8;
@@ -132,7 +151,7 @@ function animate() {
   ///animating explosions////
   particles.forEach((particle, index) => {
     particle.update();
-    if (particle.alpha <= 0) {
+    if (particle.alpha <= 0.01) {
       setTimeout(() => {
         particles.splice(index, 1);
       }, 0);
@@ -163,6 +182,10 @@ function animate() {
       (enemy.radius + player.radius) * (enemy.radius + player.radius)
     ) {
       cancelAnimationFrame(animationId);
+      model.style.display = "flex";
+      finalScore.innerHTML = scoreSum;
+      gameMusic.pause();
+      lose.play();
     }
     projectiles.forEach((projectile, Pindex) => {
       const dist =
@@ -212,7 +235,7 @@ function animate() {
     frame = 0;
   }
 }
-animate();
+//animate();
 
 window.addEventListener("click", (e) => {
   const angle = Math.atan2(
@@ -226,4 +249,12 @@ window.addEventListener("click", (e) => {
   projectiles.push(
     new Projectile(canvas.width / 2, canvas.height / 2, 5, "white", velocity)
   );
+  shot.play();
+  shot.currentTime = 0;
+});
+
+startGame.addEventListener("click", () => {
+  init();
+  animate();
+  model.style.display = "none";
 });
