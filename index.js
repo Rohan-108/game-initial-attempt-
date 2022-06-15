@@ -2,14 +2,13 @@ const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
+const score = document.getElementById("score");
 
 window.addEventListener("resize", () => {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
-  init();
 });
-
-function init() {}
+let scoreSum = 0;
 
 ////player class ////
 class Player {
@@ -69,6 +68,7 @@ class Enemies {
   }
 }
 const friction = 0.99;
+//////particles class////////
 class Particle {
   constructor(x, y, radius, color, velocity) {
     this.x = x;
@@ -100,9 +100,9 @@ const player = new Player(canvas.width / 2, canvas.height / 2, 30, "white");
 const projectiles = [];
 const enemies = [];
 const particles = [];
-let setintervalId;
+//////function to make enemies////////
 function spawnEnemies() {
-  let radius = Math.random() * (30 - 5) + 5;
+  let radius = Math.random() * 22 + 8;
   let x;
   let y;
   if (Math.random() > 0.5) {
@@ -122,6 +122,7 @@ function spawnEnemies() {
 }
 let animationId;
 let frame = 0;
+//////animating the game//////////
 function animate() {
   animationId = requestAnimationFrame(animate);
   ctx.fillStyle = "rgba(0,0,0,0.3)";
@@ -137,6 +138,7 @@ function animate() {
       }, 0);
     }
   });
+  /////animating projectiles////
   projectiles.forEach((projectile, index) => {
     projectile.update();
     if (
@@ -150,6 +152,7 @@ function animate() {
       }, 0);
     }
   });
+  ////animating enemies///////
   enemies.forEach((enemy, index) => {
     enemy.update();
     const dist =
@@ -187,10 +190,14 @@ function animate() {
 
         if (enemy.radius - 10 > 10) {
           enemy.radius -= 10;
+          scoreSum += 50;
+          score.innerHTML = scoreSum;
           setTimeout(() => {
             projectiles.splice(Pindex, 1);
           }, 0);
         } else {
+          scoreSum += 100;
+          score.innerHTML = scoreSum;
           setTimeout(() => {
             enemies.splice(index, 1);
             projectiles.splice(Pindex, 1);
@@ -206,7 +213,6 @@ function animate() {
   }
 }
 animate();
-//spawnEnemies();
 
 window.addEventListener("click", (e) => {
   const angle = Math.atan2(
