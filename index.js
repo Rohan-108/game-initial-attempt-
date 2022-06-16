@@ -9,6 +9,7 @@ const finalScore = document.getElementById("finalScore");
 const gameMusic = document.getElementById("gameMusic");
 const lose = document.getElementById("lost");
 const shot = document.getElementById("shot");
+const live = document.getElementById("live");
 
 window.addEventListener("resize", () => {
   canvas.width = window.innerWidth;
@@ -24,6 +25,7 @@ class Player {
     this.y = y;
     this.radius = radius;
     this.color = color;
+    this.lives = 3;
   }
   draw() {
     ctx.beginPath();
@@ -107,7 +109,7 @@ let player;
 let projectiles;
 let enemies;
 let particles;
-
+////////////initilization function///////////
 function init() {
   player = new Player(canvas.width / 2, canvas.height / 2, 10, "white");
   projectiles = [];
@@ -117,7 +119,8 @@ function init() {
   score.innerHTML = scoreSum;
   finalScore.innerHTML = scoreSum;
   gameMusic.play();
-  gameMusic.currentTime = 5;
+  gameMusic.currentTime = 7;
+  live.innerHTML = player.lives;
 }
 //////function to make enemies////////
 function spawnEnemies() {
@@ -181,12 +184,36 @@ function animate() {
       dist <
       (enemy.radius + player.radius) * (enemy.radius + player.radius)
     ) {
-      cancelAnimationFrame(animationId);
-      model.style.display = "flex";
-      finalScore.innerHTML = scoreSum;
-      gameMusic.pause();
-      lose.play();
+      //////showing red particle if enemy hit player////////////////////
+      for (let i = 0; i < player.radius * 2; i++) {
+        particles.push(
+          new Particle(enemy.x, enemy.y, Math.random() * 2, "red", {
+            x: (Math.random() - 0.5) * (Math.random() * 7),
+            y: (Math.random() - 0.5) * (Math.random() * 7),
+          })
+        );
+      }
+      setTimeout(() => {
+        enemies.splice(index, 1);
+        player.lives -= 1;
+        live.innerHTML = player.lives;
+      });
+      if (player.lives === 3) {
+        player.color = "orange";
+      } else if (player.lives === 2) {
+        player.color = "red";
+      }
+      //////game over ///////
+      if (player.lives === 1) {
+        cancelAnimationFrame(animationId);
+        model.style.display = "flex";
+        finalScore.innerHTML = scoreSum;
+        gameMusic.pause();
+        lose.play();
+        isGameOn = false;
+      }
     }
+    /////calculation of projectile and enemies distance/////////////
     projectiles.forEach((projectile, Pindex) => {
       const dist =
         (enemy.y - projectile.y) * (enemy.y - projectile.y) +
@@ -210,7 +237,7 @@ function animate() {
             )
           );
         }
-
+        ///reducing size of enemy on hit/////////
         if (enemy.radius - 10 > 10) {
           enemy.radius -= 10;
           scoreSum += 50;
@@ -236,7 +263,7 @@ function animate() {
   }
 }
 //animate();
-
+///////////shottting projectiles when clicked////////////
 window.addEventListener("click", (e) => {
   const angle = Math.atan2(
     e.clientY - canvas.height / 2,
@@ -246,15 +273,32 @@ window.addEventListener("click", (e) => {
     x: Math.cos(angle) * 7,
     y: Math.sin(angle) * 7,
   };
-  projectiles.push(
-    new Projectile(canvas.width / 2, canvas.height / 2, 5, "white", velocity)
-  );
-  shot.play();
-  shot.currentTime = 0;
+  if (isGameOn) {
+    projectiles.push(
+      new Projectile(canvas.width / 2, canvas.height / 2, 5, "white", velocity)
+    );
+    shot.play();
+    shot.currentTime = 0;
+  }
 });
-
+let isGameOn = false;
+////starting game ////////////
 startGame.addEventListener("click", () => {
+  isGameOn = true;
   init();
   animate();
   model.style.display = "none";
 });
+///////looping gameMusic///////
+if (typeof gameMusic.loop == "boolean") {
+  gameMusic.loop = true;
+} else {
+  gameMusic.addEventListener(
+    "ended",
+    function () {
+      this.currentTime = 0;
+      this.play();
+    },
+    false
+  );
+}
