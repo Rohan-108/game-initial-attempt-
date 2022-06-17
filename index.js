@@ -149,7 +149,9 @@ function animate() {
   animationId = requestAnimationFrame(animate);
   ctx.fillStyle = "rgba(0,0,0,0.3)";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  player.draw();
+  if (player.lives !== 0) {
+    player.draw();
+  }
 
   ///animating explosions////
   particles.forEach((particle, index) => {
@@ -205,11 +207,21 @@ function animate() {
       }
       //////game over ///////
       if (player.lives === 1) {
-        cancelAnimationFrame(animationId);
-        model.style.display = "flex";
-        finalScore.innerHTML = scoreSum;
-        gameMusic.pause();
-        lose.play();
+        for (let i = 0; i < player.radius * 2; i++) {
+          particles.push(
+            new Particle(enemy.x, enemy.y, Math.random() * 2, "red", {
+              x: (Math.random() - 0.5) * (Math.random() * 7),
+              y: (Math.random() - 0.5) * (Math.random() * 7),
+            })
+          );
+        }
+        setTimeout(() => {
+          cancelAnimationFrame(animationId);
+          model.style.display = "flex";
+          finalScore.innerHTML = scoreSum;
+          gameMusic.pause();
+          lose.play();
+        }, 850);
         isGameOn = false;
       }
     }
